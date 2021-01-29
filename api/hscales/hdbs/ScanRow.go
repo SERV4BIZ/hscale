@@ -8,7 +8,7 @@ import (
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/gfp/uuid"
 	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
-	"github.com/SERV4BIZ/hscale/api/utilities"
+	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
 // ScanRowWorker is thread loop scan all data and add to listing for scan function
@@ -26,7 +26,7 @@ func ScanRowWorker(hdbItem *HDB, scanItem *DataScan, txtTable string, arrColumns
 	for jsaNodeKey.Length() > 0 {
 		<-time.After(time.Millisecond)
 
-		index := utilities.RandomIntn(jsaNodeKey.Length())
+		index := utility.RandomIntn(jsaNodeKey.Length())
 		nodeName := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 

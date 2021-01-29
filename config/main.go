@@ -12,7 +12,7 @@ import (
 	"github.com/SERV4BIZ/hscale/config/global"
 	"github.com/SERV4BIZ/hscale/config/locals"
 	"github.com/SERV4BIZ/hscale/config/systems/dbprepare"
-	"github.com/SERV4BIZ/hscale/config/utilities"
+	"github.com/SERV4BIZ/hscale/config/utility"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	fmt.Println(fmt.Sprint(global.AppName, " Version ", global.AppVersion))
 	fmt.Println("Copyright © 2020 ", global.CompanyName, " All Rights Reserved.")
 	fmt.Println("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *")
-	fmt.Println(fmt.Sprint("Directory : ", utilities.GetAppDir()))
+	fmt.Println(fmt.Sprint("Directory : ", utility.GetAppDir()))
 	fmt.Println("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *")
 	fmt.Println("Loading configuration file.")
 	fmt.Println("* * * * * * * * * * * * * * * * * * * * * * * * * * * * * *")
@@ -43,7 +43,7 @@ func main() {
 			runtime.ReadMemStats(&m)
 
 			global.MutexState.Lock()
-			global.MemoryState = int(utilities.NumberByteToMb(m.Sys))
+			global.MemoryState = int(utility.NumberByteToMb(m.Sys))
 			global.LoadState = global.CountState
 			global.CountState = 0
 			global.MutexState.Unlock()

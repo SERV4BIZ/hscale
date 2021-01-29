@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/utilities"
+	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
 // GetRow is get data by sql connection
@@ -28,7 +28,7 @@ func GetRow(dbConn ConnDriver, sqlSelect string, txtTable string, arrColumns []s
 	sqlQuery := sqlSelect
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{table}", txtTable)
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{columns}", txtColumns)
-	sqlQuery = strings.ReplaceAll(sqlQuery, "{keyname}", utilities.AddQuote(txtKeyname))
+	sqlQuery = strings.ReplaceAll(sqlQuery, "{keyname}", utility.AddQuote(txtKeyname))
 	errGet := dbConn.QueryRow(sqlQuery).Scan(getDataPointers...)
 	if errGet != nil {
 		return nil, errGet

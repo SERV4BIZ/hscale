@@ -2,7 +2,7 @@ package trans
 
 import (
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/utilities"
+	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
 func (me *HDBTx) Rollback() error {
@@ -15,7 +15,7 @@ func (me *HDBTx) Rollback() error {
 
 	var errResult error = nil
 	for jsaNodeKey.Length() > 0 {
-		index := utilities.RandomIntn(jsaNodeKey.Length())
+		index := utility.RandomIntn(jsaNodeKey.Length())
 		nodeKey := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 

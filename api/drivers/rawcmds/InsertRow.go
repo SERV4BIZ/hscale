@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/utilities"
+	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
 // InsertRow is get data by sql connection
@@ -30,7 +30,7 @@ func InsertRow(dbConn ConnDriver, sqlInsert string, txtTable string, txtKeyname 
 		txtColumns = fmt.Sprint(txtColumns, columnItem, ",")
 
 		if strings.HasPrefix(pcol, "txt_") {
-			txtValues = fmt.Sprint(txtValues, "'", utilities.AddQuote(jsoData.GetString(columnItem)), "'", ",")
+			txtValues = fmt.Sprint(txtValues, "'", utility.AddQuote(jsoData.GetString(columnItem)), "'", ",")
 		} else if strings.HasPrefix(pcol, "int_") {
 			txtValues = fmt.Sprint(txtValues, jsoData.GetInt(columnItem), ",")
 		} else if strings.HasPrefix(pcol, "dbl_") {
@@ -38,11 +38,11 @@ func InsertRow(dbConn ConnDriver, sqlInsert string, txtTable string, txtKeyname 
 		} else if strings.HasPrefix(pcol, "bln_") {
 			txtValues = fmt.Sprint(txtValues, jsoData.GetBool(columnItem), ",")
 		} else if strings.HasPrefix(pcol, "jsa_") {
-			txtValues = fmt.Sprint(txtValues, "'", utilities.AddQuote(jsoData.GetArray(columnItem).ToString()), "'", ",")
+			txtValues = fmt.Sprint(txtValues, "'", utility.AddQuote(jsoData.GetArray(columnItem).ToString()), "'", ",")
 		} else if strings.HasPrefix(pcol, "jso_") {
-			txtValues = fmt.Sprint(txtValues, "'", utilities.AddQuote(jsoData.GetObject(columnItem).ToString()), "'", ",")
+			txtValues = fmt.Sprint(txtValues, "'", utility.AddQuote(jsoData.GetObject(columnItem).ToString()), "'", ",")
 		} else if strings.HasPrefix(pcol, "lst_") {
-			txtValues = fmt.Sprint(txtValues, "'", utilities.AddQuote(jsoData.GetObject(columnItem).ToString()), "'", ",")
+			txtValues = fmt.Sprint(txtValues, "'", utility.AddQuote(jsoData.GetObject(columnItem).ToString()), "'", ",")
 		}
 	}
 	txtColumns = strings.TrimSpace(strings.Trim(txtColumns, ","))
@@ -52,7 +52,7 @@ func InsertRow(dbConn ConnDriver, sqlInsert string, txtTable string, txtKeyname 
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{table}", txtTable)
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{columns}", txtColumns)
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{values}", txtValues)
-	sqlQuery = strings.ReplaceAll(sqlQuery, "{keyname}", utilities.AddQuote(txtKeyname))
+	sqlQuery = strings.ReplaceAll(sqlQuery, "{keyname}", utility.AddQuote(txtKeyname))
 	dbResult, errExec := dbConn.Exec(sqlQuery)
 	if errExec != nil {
 		return errExec

@@ -6,7 +6,7 @@ import (
 
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
-	"github.com/SERV4BIZ/hscale/api/utilities"
+	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
 // Counter is increase number of keyname
@@ -67,7 +67,7 @@ func (me *HDB) Counter(txtKeyname string) (int, error) {
 	me.MutexMapDataNode.RUnlock()
 
 	for jsaNodeKey.Length() > 0 {
-		index := utilities.RandomIntn(jsaNodeKey.Length())
+		index := utility.RandomIntn(jsaNodeKey.Length())
 		nodeName := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 
@@ -113,7 +113,7 @@ func (me *HDB) Counter(txtKeyname string) (int, error) {
 
 	// If not found then insert row
 	me.MutexMapDataNode.RLock()
-	dataNodeItem := me.MapDataNode[nodeKeys[utilities.RandomIntn(len(nodeKeys))]]
+	dataNodeItem := me.MapDataNode[nodeKeys[utility.RandomIntn(len(nodeKeys))]]
 	me.MutexMapDataNode.RUnlock()
 
 	Reconnect(dataNodeItem)

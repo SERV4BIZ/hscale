@@ -20,7 +20,7 @@ func Listing(jsoCmd *jsons.JSONObject) *jsons.JSONObject {
 	}
 
 	jsoData := jsons.JSONObjectFactory()
-	jsoData.PutInt("num_length", jsaListing.Length())
+	jsoData.PutInt("int_length", jsaListing.Length())
 	jsoData.PutArray("jsa_listing", jsaListing)
 	jsoResult.PutObject("jso_data", jsoData)
 	jsoResult.PutInt("status", 1)

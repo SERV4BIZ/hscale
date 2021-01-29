@@ -7,7 +7,7 @@ import (
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/gfp/uuid"
 	"github.com/SERV4BIZ/hscale/api/hscales/hdbs"
-	"github.com/SERV4BIZ/hscale/api/utilities"
+	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
 // Begin is create transaction object
@@ -29,7 +29,7 @@ func Begin(hdbItem *hdbs.HDB) (*HDBTx, error) {
 	hdbItem.MutexMapDataNode.RUnlock()
 
 	for jsaNodeKey.Length() > 0 {
-		index := utilities.RandomIntn(jsaNodeKey.Length())
+		index := utility.RandomIntn(jsaNodeKey.Length())
 		nodeKey := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 

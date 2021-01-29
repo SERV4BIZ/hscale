@@ -6,7 +6,7 @@ import (
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
 	"github.com/SERV4BIZ/hscale/api/hscales/hdbs"
-	"github.com/SERV4BIZ/hscale/api/utilities"
+	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
 // DeleteRow is delete data aleady in database from node and shard id and keyname
@@ -68,7 +68,7 @@ func (me *HDBTx) DeleteRow(txtTable string, txtKeyname string) error {
 	me.HDB.MutexMapDataNode.RUnlock()
 
 	for jsaNodeKey.Length() > 0 {
-		index := utilities.RandomIntn(jsaNodeKey.Length())
+		index := utility.RandomIntn(jsaNodeKey.Length())
 		nodeName := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 

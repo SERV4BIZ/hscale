@@ -6,7 +6,7 @@ import (
 
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
-	"github.com/SERV4BIZ/hscale/api/utilities"
+	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
 // GetAll is get data all in database from node
@@ -30,7 +30,7 @@ func (me *HDB) GetAll(txtTable string, arrColumns []string, intLimit int) (*json
 
 	jsaListing := jsons.JSONArrayFactory()
 	for jsaNodeKey.Length() > 0 {
-		index := utilities.RandomIntn(jsaNodeKey.Length())
+		index := utility.RandomIntn(jsaNodeKey.Length())
 		nodeName := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 
