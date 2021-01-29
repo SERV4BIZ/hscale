@@ -10,7 +10,7 @@ import (
 	"github.com/SERV4BIZ/hscale/config/utility"
 )
 
-// LoadAllSQLDriver is load list sql driver
+// LoadAllSQLDriver is load list sql driver.
 func LoadAllSQLDriver(driver string) (*jsons.JSONObject, error) {
 	jsoSQLDriver := jsons.JSONObjectFactory()
 	pathdir := fmt.Sprint(utility.GetAppDir(), utility.DS, "sqldrivers", utility.DS, driver)
@@ -31,5 +31,6 @@ func LoadAllSQLDriver(driver string) (*jsons.JSONObject, error) {
 			jsoSQLDriver.PutString(pureName, string(buff))
 		}
 	}
+
 	return jsoSQLDriver, err
 }

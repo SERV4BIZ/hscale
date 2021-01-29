@@ -10,7 +10,7 @@ import (
 	"github.com/SERV4BIZ/hscale/config/utility"
 )
 
-// ListDatabase is listing database all
+// ListDatabase is listing database all.
 func ListDatabase() (*jsons.JSONArray, error) {
 	jsaList := jsons.JSONArrayFactory()
 	pathdir := fmt.Sprint(utility.GetAppDir(), utility.DS, "databases")
@@ -24,5 +24,6 @@ func ListDatabase() (*jsons.JSONArray, error) {
 			jsaList.PutString(strings.TrimSpace(strings.ToLower(strings.TrimSuffix(fileName, ".json"))))
 		}
 	}
+
 	return jsaList, err
 }

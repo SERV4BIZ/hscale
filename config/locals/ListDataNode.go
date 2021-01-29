@@ -10,7 +10,7 @@ import (
 	"github.com/SERV4BIZ/hscale/config/utility"
 )
 
-// ListDataNode is listing data node
+// ListDataNode is listing data node.
 func ListDataNode() (*jsons.JSONArray, error) {
 	jsaList := jsons.JSONArrayFactory()
 	pathdir := fmt.Sprint(utility.GetAppDir(), utility.DS, "datanodes")
@@ -24,5 +24,6 @@ func ListDataNode() (*jsons.JSONArray, error) {
 			jsaList.PutString(strings.TrimSpace(strings.ToLower(strings.TrimSuffix(fileName, ".json"))))
 		}
 	}
+
 	return jsaList, err
 }
