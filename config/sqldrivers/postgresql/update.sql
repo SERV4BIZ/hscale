@@ -1,0 +1,1 @@
+UPDATE public.{table} SET {values} WHERE txt_keyname = '{keyname}';

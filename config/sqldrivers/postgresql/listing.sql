@@ -1,0 +1,1 @@
+SELECT {columns} FROM public.{table} OFFSET {offset} LIMIT {limit}

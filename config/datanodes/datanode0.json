@@ -1,0 +1,11 @@
+{
+    "txt_name": "datanode0",
+    "jso_database": {
+        "txt_driver":"postgresql",
+        "txt_host": "localhost",
+        "int_port": 5432,
+        "txt_username": "postgres",
+        "txt_password": "Qaz74100!",
+        "txt_dbname": "postgres"
+    }
+}

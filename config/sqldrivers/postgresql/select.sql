@@ -1,0 +1,1 @@
+SELECT {columns} FROM public.{table} WHERE txt_keyname = '{keyname}' LIMIT 1;

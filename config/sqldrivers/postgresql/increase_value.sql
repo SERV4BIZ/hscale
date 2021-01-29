@@ -1,0 +1,1 @@
+UPDATE public.{table} SET dbl_modify={modify}, {column} = {column} + {value} WHERE txt_keyname='{keyname}'

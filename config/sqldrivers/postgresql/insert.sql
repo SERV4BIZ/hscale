@@ -1,0 +1,1 @@
+INSERT INTO public.{table}({columns})VALUES({values});

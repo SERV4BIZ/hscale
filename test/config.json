@@ -1,0 +1,9 @@
+{
+	"txt_protocol": "http",
+	"txt_host": "localhost",
+	"int_port": 3210,
+	"int_timeout": 15,
+	"txt_username": "admin",
+	"txt_password": "Qaz74100!",
+	"txt_dbname": "beebber"
+}

@@ -1,0 +1,22 @@
+{
+	"txt_name": "beebber",
+	"jso_schema" : {
+		"users" : {
+			"txt_username":"",
+			"txt_password":"",
+			"txt_fullname":"",
+			"int_age":0,
+			"dbl_balance":0.0,
+			"bln_active":true,
+			"jsa_keyword":[],
+			"jso_profile":{},
+			"lst_teams":{}
+		},
+		"teams" : {
+			"txt_teamname":""
+		},
+		"sessions" : {
+			"jso_data":{}
+		}
+	}
+}

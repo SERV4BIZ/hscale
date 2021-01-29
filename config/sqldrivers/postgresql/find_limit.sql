@@ -1,0 +1,1 @@
+SELECT {columns} FROM public.{table} WHERE {conditions} LIMIT {limit};
