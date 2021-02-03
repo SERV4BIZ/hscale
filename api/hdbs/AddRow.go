@@ -9,7 +9,7 @@ import (
 )
 
 // AddRow is add new data in database from node and shard id and keyname
-func (me *HDB) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONObject) error {
+func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONObject) error {
 	if jsoData.Length() <= 0 {
 		return errors.New("Data is empty")
 	}

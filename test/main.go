@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/hscales/hdbs"
-	"github.com/SERV4BIZ/hscale/api/hscales/trans"
+	"github.com/SERV4BIZ/hscale/api/hdbs"
 )
 
 func GetAppDir() string {

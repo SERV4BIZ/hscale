@@ -32,7 +32,7 @@ func ScanListWorker(hdbItem *HDB, scanItem *DataScan, txtTable string, txtKeynam
 		dataNodeItem := hdbItem.MapDataNode[nodeName]
 		hdbItem.MutexMapDataNode.RUnlock()
 
-		Reconnect(dataNodeItem)
+		dataNodeItem.Reconnect()
 		dataNodeItem.RLock()
 		sqlListColumn := dataNodeItem.JSOSQLDriver.GetString("listing_column")
 		dataNodeItem.RUnlock()
@@ -86,11 +86,11 @@ func ScanListWorker(hdbItem *HDB, scanItem *DataScan, txtTable string, txtKeynam
 }
 
 // ScanList is list data in database from node
-func (me *HDB) ScanList(txtTable string, txtKeyname string, txtHeadColumn string, arrColumns []string, txtUUID string) *jsons.JSONObject {
+func (me *HDBTX) ScanList(txtTable string, txtKeyname string, txtHeadColumn string, arrColumns []string, txtUUID string) *jsons.JSONObject {
 	jsoResult := jsons.JSONObjectFactory()
-	me.MutexMapDataScan.RLock()
-	scanItem, scanOk := me.MapDataScan[txtUUID]
-	me.MutexMapDataScan.RUnlock()
+	me.HDB.MutexMapDataScan.RLock()
+	scanItem, scanOk := me.HDB.MapDataScan[txtUUID]
+	me.HDB.MutexMapDataScan.RUnlock()
 
 	if scanOk {
 		jsaList := jsons.JSONArrayFactory()
@@ -132,9 +132,9 @@ func (me *HDB) ScanList(txtTable string, txtKeyname string, txtHeadColumn string
 		scanItem.ErrorMsg = ""
 		scanItem.JSAList = jsons.JSONArrayFactory()
 
-		me.MutexMapDataScan.RLock()
-		me.MapDataScan[txtUUID] = scanItem
-		me.MutexMapDataScan.RUnlock()
+		me.HDB.MutexMapDataScan.RLock()
+		me.HDB.MapDataScan[txtUUID] = scanItem
+		me.HDB.MutexMapDataScan.RUnlock()
 
 		jsoResult.PutDouble("dbl_stamp", scanItem.Stamp)
 		jsoResult.PutDouble("dbl_read", scanItem.Read)

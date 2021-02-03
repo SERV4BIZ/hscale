@@ -5,32 +5,27 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/SERV4BIZ/hscale/api/drivers/postgresql"
+	"github.com/SERV4BIZ/escondb"
 )
 
 // Connect is access connection to database in host and return connection.
-func Connect(dataNodeItem *DataNode) error {
-	dataNodeItem.RLock()
-	driverName := dataNodeItem.JSODataBase.GetString("txt_driver")
-	host := dataNodeItem.JSODataBase.GetString("txt_host")
-	port := dataNodeItem.JSODataBase.GetInt("int_port")
-	username := dataNodeItem.JSODataBase.GetString("txt_username")
-	password := dataNodeItem.JSODataBase.GetString("txt_password")
-	dataNodeItem.RUnlock()
+func (me *DataNode) Connect() error {
+	me.RLock()
+	driverName := me.JSODataBase.GetString("txt_driver")
+	host := me.JSODataBase.GetString("txt_host")
+	port := me.JSODataBase.GetInt("int_port")
+	username := me.JSODataBase.GetString("txt_username")
+	password := me.JSODataBase.GetString("txt_password")
+	me.RUnlock()
 
-	if strings.ToLower(strings.TrimSpace(driverName)) == "postgresql" {
-		conn, errConn := postgresql.Connect(host, port, username, password, dataNodeItem.HDB.DBName)
-		if errConn != nil {
-			if conn != nil {
-				conn.Close()
-			}
-			dataNodeItem.DBConn = nil
-			return errConn
+	me.DBConn,errConn := escondb.Connect(driverName, host, port, username, password, me.HDB.DBName)
+	if errConn != nil {
+		if conn != nil {
+			conn.Close()
 		}
-		dataNodeItem.DBConn = conn
-		return nil
+		me.DBConn = nil
+		return errConn
 	}
-
-	dataNodeItem.DBConn = nil
-	return errors.New(fmt.Sprint("Not found ", driverName, " driver"))
+	me.DBConn = conn
+	return nil
 }

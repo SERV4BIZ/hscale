@@ -71,7 +71,7 @@ func Factory(jsoConfigHost *jsons.JSONObject) (*HDB, error) {
 		nNodeItem.DBConn = nil
 		nNodeItem.MapDBTx = make(map[string]*sql.Tx)
 
-		errConn := Connect(nNodeItem)
+		errConn := nNodeItem.Connect()
 		if errConn != nil {
 			// Close all connection
 			hdbItem.MutexMapDataNode.RLock()

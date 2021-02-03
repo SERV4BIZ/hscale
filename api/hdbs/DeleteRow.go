@@ -9,11 +9,11 @@ import (
 )
 
 // DeleteRow is delete data aleady in database from node and shard id and keyname
-func (me *HDB) DeleteRow(txtTable string, txtKeyname string) error {
+func (me *HDBTX) DeleteRow(txtTable string, txtKeyname string) error {
 	// Check in memory
-	me.MutexMapDataTable.RLock()
-	dbTable, tableOk := me.MapDataTable[txtTable]
-	me.MutexMapDataTable.RUnlock()
+	me.HDB.MutexMapDataTable.RLock()
+	dbTable, tableOk := me.HDB.MapDataTable[txtTable]
+	me.HDB.MutexMapDataTable.RUnlock()
 
 	if !tableOk {
 		return errors.New("Table not found")
@@ -26,7 +26,7 @@ func (me *HDB) DeleteRow(txtTable string, txtKeyname string) error {
 	if itemOk {
 		dataNodeItem := dbDataItem.DataNode
 
-		Reconnect(dataNodeItem)
+		dataNodeItem.Reconnect()
 		dataNodeItem.RLock()
 		sqlDelete := dataNodeItem.JSOSQLDriver.GetString("delete")
 		dataNodeItem.RUnlock()
@@ -47,23 +47,23 @@ func (me *HDB) DeleteRow(txtTable string, txtKeyname string) error {
 	}
 
 	// If pointer not found
-	me.MutexMapDataNode.RLock()
+	me.HDB.MutexMapDataNode.RLock()
 	jsaNodeKey := jsons.JSONArrayFactory()
-	for key := range me.MapDataNode {
+	for key := range me.HDB.MapDataNode {
 		jsaNodeKey.PutString(key)
 	}
-	me.MutexMapDataNode.RUnlock()
+	me.HDB.MutexMapDataNode.RUnlock()
 
 	for jsaNodeKey.Length() > 0 {
 		index := utility.RandomIntn(jsaNodeKey.Length())
 		nodeName := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 
-		me.MutexMapDataNode.RLock()
-		dataNodeItem := me.MapDataNode[nodeName]
-		me.MutexMapDataNode.RUnlock()
+		me.HDB.MutexMapDataNode.RLock()
+		dataNodeItem := me.HDB.MapDataNode[nodeName]
+		me.HDB.MutexMapDataNode.RUnlock()
 
-		Reconnect(dataNodeItem)
+		dataNodeItem.Reconnect()
 		dataNodeItem.RLock()
 		sqlDelete := dataNodeItem.JSOSQLDriver.GetString("delete")
 		dataNodeItem.RUnlock()

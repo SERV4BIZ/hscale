@@ -7,7 +7,7 @@ import (
 )
 
 // PutList is put data in database from node and shard id and keyname
-func (me *HDB) PutList(txtTable string, txtKeyname string, txtHeadColumn string, txtItemKey string) error {
+func (me *HDBTX) PutList(txtTable string, txtKeyname string, txtHeadColumn string, txtItemKey string) error {
 	jsoRow, errRow := me.GetRow(txtTable, []string{txtHeadColumn}, txtKeyname)
 	if errRow != nil {
 		return errors.New(fmt.Sprint("Can not get row in ", txtTable, " from key ", txtKeyname, " [ ", errRow, " ]"))

@@ -10,23 +10,23 @@ import (
 )
 
 // GetAll is get data all in database from node
-func (me *HDB) GetAll(txtTable string, arrColumns []string, intLimit int) (*jsons.JSONArray, error) {
+func (me *HDBTX) GetAll(txtTable string, arrColumns []string, intLimit int) (*jsons.JSONArray, error) {
 	// Check in memory
-	me.MutexMapDataTable.RLock()
-	_, tableOk := me.MapDataTable[txtTable]
-	me.MutexMapDataTable.RUnlock()
+	me.HDB.MutexMapDataTable.RLock()
+	_, tableOk := me.HDB.MapDataTable[txtTable]
+	me.HDB.MutexMapDataTable.RUnlock()
 
 	if !tableOk {
 		return nil, errors.New("Table not found")
 	}
 	columns := arrColumns
 
-	me.MutexMapDataNode.RLock()
+	me.HDB.MutexMapDataNode.RLock()
 	jsaNodeKey := jsons.JSONArrayFactory()
-	for key := range me.MapDataNode {
+	for key := range me.HDB.MapDataNode {
 		jsaNodeKey.PutString(key)
 	}
-	me.MutexMapDataNode.RUnlock()
+	me.HDB.MutexMapDataNode.RUnlock()
 
 	jsaListing := jsons.JSONArrayFactory()
 	for jsaNodeKey.Length() > 0 {
@@ -34,11 +34,11 @@ func (me *HDB) GetAll(txtTable string, arrColumns []string, intLimit int) (*json
 		nodeName := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 
-		me.MutexMapDataNode.RLock()
-		dataNodeItem := me.MapDataNode[nodeName]
-		me.MutexMapDataNode.RUnlock()
+		me.HDB.MutexMapDataNode.RLock()
+		dataNodeItem := me.HDB.MapDataNode[nodeName]
+		me.HDB.MutexMapDataNode.RUnlock()
 
-		Reconnect(dataNodeItem)
+		dataNodeItem.Reconnect()
 		dataNodeItem.RLock()
 		sqlSelectAll := dataNodeItem.JSOSQLDriver.GetString("select_all")
 		sqlSelectAllLimit := dataNodeItem.JSOSQLDriver.GetString("select_all_limit")

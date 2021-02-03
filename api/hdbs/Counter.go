@@ -10,15 +10,15 @@ import (
 )
 
 // Counter is increase number of keyname
-func (me *HDB) Counter(txtKeyname string) (int, error) {
+func (me *HDBTX) Counter(txtKeyname string) (int, error) {
 	if strings.TrimSpace(txtKeyname) == "" {
 		return -1, errors.New("Data is empty")
 	}
 	txtTable := "counters"
 	txtColumn := "int_value"
 
-	me.MutexMapDataTable.RLock()
-	dbTable, tableOk := me.MapDataTable[txtTable]
+	me.HDB.MutexMapDataTable.RLock()
+	dbTable, tableOk := me.HDB.MapDataTable[txtTable]
 	me.MutexMapDataTable.RUnlock()
 
 	if !tableOk {
@@ -32,7 +32,7 @@ func (me *HDB) Counter(txtKeyname string) (int, error) {
 	if itemOk {
 		dataNodeItem := dbDataItem.DataNode
 
-		Reconnect(dataNodeItem)
+		dataNodeItem.Reconnect()
 		dataNodeItem.RLock()
 		sqlIncrease := dataNodeItem.JSOSQLDriver.GetString("increase_value")
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
@@ -57,10 +57,10 @@ func (me *HDB) Counter(txtKeyname string) (int, error) {
 
 	// If not found data pointer
 	// Find aleady data in any node if found then update it
-	me.MutexMapDataNode.RLock()
+	me.HDB.MutexMapDataNode.RLock()
 	jsaNodeKey := jsons.JSONArrayFactory()
 	nodeKeys := make([]string, 0)
-	for key := range me.MapDataNode {
+	for key := range me.HDB.MapDataNode {
 		jsaNodeKey.PutString(key)
 		nodeKeys = append(nodeKeys, key)
 	}
@@ -71,11 +71,11 @@ func (me *HDB) Counter(txtKeyname string) (int, error) {
 		nodeName := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 
-		me.MutexMapDataNode.RLock()
-		dataNodeItem := me.MapDataNode[nodeName]
-		me.MutexMapDataNode.RUnlock()
+		me.HDB.MutexMapDataNode.RLock()
+		dataNodeItem := me.HDB.MapDataNode[nodeName]
+		me.HDB.MutexMapDataNode.RUnlock()
 
-		Reconnect(dataNodeItem)
+		dataNodeItem.Reconnect()
 		dataNodeItem.RLock()
 		sqlIncrease := dataNodeItem.JSOSQLDriver.GetString("increase_value")
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
@@ -112,11 +112,11 @@ func (me *HDB) Counter(txtKeyname string) (int, error) {
 	}
 
 	// If not found then insert row
-	me.MutexMapDataNode.RLock()
-	dataNodeItem := me.MapDataNode[nodeKeys[utility.RandomIntn(len(nodeKeys))]]
-	me.MutexMapDataNode.RUnlock()
+	me.HDB.MutexMapDataNode.RLock()
+	dataNodeItem := me.HDB.MapDataNode[nodeKeys[utility.RandomIntn(len(nodeKeys))]]
+	me.HDB.MutexMapDataNode.RUnlock()
 
-	Reconnect(dataNodeItem)
+	dataNodeItem.Reconnect()
 	dataNodeItem.RLock()
 	sqlInsert := dataNodeItem.JSOSQLDriver.GetString("insert")
 	dataNodeItem.RUnlock()

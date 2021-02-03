@@ -10,7 +10,7 @@ import (
 )
 
 // NewListNode is create a new list node of column list
-func (me *HDB) NewListNode(txtTable string, txtKeyname string, txtHeadColumn string) (*jsons.JSONObject, error) {
+func (me *HDBTX) NewListNode(txtTable string, txtKeyname string, txtHeadColumn string) (*jsons.JSONObject, error) {
 	jsoRow, errRow := me.GetRow(txtTable, []string{txtHeadColumn}, txtKeyname)
 	if errRow != nil {
 		return nil, errors.New(fmt.Sprint("Can not get row in ", txtTable, " from key ", txtKeyname, " [ ", errRow, " ]"))

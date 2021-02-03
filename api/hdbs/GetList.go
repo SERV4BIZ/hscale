@@ -8,7 +8,7 @@ import (
 )
 
 // GetList is put data in database from node and shard id and keyname
-func (me *HDB) GetList(txtTable string, txtKeyname string, txtHeadColumn string, arrColumns []string, intOffet int, intLimit int) (*jsons.JSONArray, error) {
+func (me *HDBTX) GetList(txtTable string, txtKeyname string, txtHeadColumn string, arrColumns []string, intOffet int, intLimit int) (*jsons.JSONArray, error) {
 	jsoRow, errRow := me.GetRow(txtTable, []string{txtHeadColumn}, txtKeyname)
 	if errRow != nil {
 		return nil, errors.New(fmt.Sprint("Can not get row in ", txtTable, " from key ", txtKeyname, " [ ", errRow, " ]"))
