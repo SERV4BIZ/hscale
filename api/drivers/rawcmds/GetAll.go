@@ -9,7 +9,7 @@ import (
 )
 
 // GetAll is get all data with conditions by sql connection
-func GetAll(dbConn ConnDriver, sqlFind string, txtTable string, arrColumns []string, intLimit int) (*jsons.JSONArray, error) {
+func GetAll(dbConn *escondb.ESCONTX, sqlFind string, txtTable string, arrColumns []string, intLimit int) (*jsons.JSONArray, error) {
 	if len(arrColumns) <= 0 {
 		return nil, errors.New("Columns is empty")
 	}

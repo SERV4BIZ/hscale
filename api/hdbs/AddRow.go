@@ -14,9 +14,9 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 		return errors.New("Data is empty")
 	}
 
-	me.MutexMapDataTable.RLock()
-	dbTable, tableOk := me.MapDataTable[txtTable]
-	me.MutexMapDataTable.RUnlock()
+	me.HDB.MutexMapDataTable.RLock()
+	dbTable, tableOk := me.HDB.MapDataTable[txtTable]
+	me.HDB.MutexMapDataTable.RUnlock()
 
 	if !tableOk {
 		return errors.New("Table not found")
@@ -29,16 +29,24 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 	if itemOk {
 		dataNodeItem := dbDataItem.DataNode
 
-		Reconnect(dataNodeItem)
+		dataNodeItem.Reconnect()
 		dataNodeItem.RLock()
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
 		dataNodeItem.RUnlock()
+
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return errors.New("Database transaction not found")
+		}
 
 		if dataNodeItem.DBConn == nil {
 			return errors.New("Connection is not open")
 		}
 
-		_, errRaw := rawcmds.GetRow(dataNodeItem.DBConn, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
+		_, errRaw := rawcmds.GetRow(dbTx, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
 		if errRaw == nil {
 			return errors.New("Already in database")
 		}
@@ -46,34 +54,42 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 
 	// If not found data pointer
 	// Find aleady data in any node if found then update it
-	me.MutexMapDataNode.RLock()
+	me.HDB.MutexMapDataNode.RLock()
 	jsaNodeKey := jsons.JSONArrayFactory()
 	nodeKeys := make([]string, 0)
-	for key := range me.MapDataNode {
+	for key := range me.HDB.MapDataNode {
 		jsaNodeKey.PutString(key)
 		nodeKeys = append(nodeKeys, key)
 	}
-	me.MutexMapDataNode.RUnlock()
+	me.HDB.MutexMapDataNode.RUnlock()
 
 	for jsaNodeKey.Length() > 0 {
 		index := utility.RandomIntn(jsaNodeKey.Length())
 		nodeName := jsaNodeKey.GetString(index)
 		jsaNodeKey.Remove(index)
 
-		me.MutexMapDataNode.RLock()
-		dataNodeItem := me.MapDataNode[nodeName]
-		me.MutexMapDataNode.RUnlock()
-
-		Reconnect(dataNodeItem)
-		dataNodeItem.RLock()
-		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
-		dataNodeItem.RUnlock()
+		me.HDB.MutexMapDataNode.RLock()
+		dataNodeItem := me.HDB.MapDataNode[nodeName]
+		me.HDB.MutexMapDataNode.RUnlock()
 
 		if dataNodeItem.DBConn == nil {
 			return errors.New("Connection is not open")
 		}
 
-		jsoResult, errRaw := rawcmds.GetRow(dataNodeItem.DBConn, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
+		dataNodeItem.Reconnect()
+		dataNodeItem.RLock()
+		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
+		dataNodeItem.RUnlock()
+
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return errors.New("Database transaction not found")
+		}
+
+		jsoResult, errRaw := rawcmds.GetRow(dbTx, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
 		if errRaw == nil {
 			if jsoResult != nil {
 				dbTable.Lock()
@@ -89,18 +105,26 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 	}
 
 	// If not found then insert row
-	me.MutexMapDataNode.RLock()
-	dataNodeItem := me.MapDataNode[nodeKeys[utility.RandomIntn(len(nodeKeys))]]
-	me.MutexMapDataNode.RUnlock()
-
-	Reconnect(dataNodeItem)
-	dataNodeItem.RLock()
-	sqlInsert := dataNodeItem.JSOSQLDriver.GetString("insert")
-	dataNodeItem.RUnlock()
+	me.HDB.MutexMapDataNode.RLock()
+	dataNodeItem := me.HDB.MapDataNode[nodeKeys[utility.RandomIntn(len(nodeKeys))]]
+	me.HDB.MutexMapDataNode.RUnlock()
 
 	if dataNodeItem.DBConn == nil {
 		return errors.New("Connection is not open")
 	}
 
-	return rawcmds.InsertRow(dataNodeItem.DBConn, sqlInsert, txtTable, txtKeyname, jsoData)
+	dataNodeItem.Reconnect()
+	dataNodeItem.RLock()
+	sqlInsert := dataNodeItem.JSOSQLDriver.GetString("insert")
+	dataNodeItem.RUnlock()
+
+	dataNodeItem.MutexMapDBTx.Lock()
+	dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+	dataNodeItem.MutexMapDBTx.Unlock()
+
+	if !dbTxOk {
+		return errors.New("Database transaction not found")
+	}
+
+	return rawcmds.InsertRow(dbTx, sqlInsert, txtTable, txtKeyname, jsoData)
 }

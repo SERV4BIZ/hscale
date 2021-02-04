@@ -5,24 +5,17 @@ import (
 )
 
 // ListColumns is get all fields or columns of table by sql connection
-func ListColumns(dbConn ConnDriver, sqlListColumn string, txtTable string) ([]string, error) {
+func ListColumns(dbConn *escondb.ESCONTX, sqlListColumn string, txtTable string) ([]string, error) {
 	sqlQuery := sqlListColumn
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{table}", txtTable)
-	dbRows, errRow := dbConn.Query(sqlQuery)
-	defer dbRows.Close()
-
+	jsaRow, errRow := dbConn.Query(sqlQuery)
 	if errRow != nil {
 		return nil, errRow
 	}
 
 	arrColumns := make([]string, 0)
-	txtColumnName := ""
-	for dbRows.Next() {
-		errScan := dbRows.Scan(&txtColumnName)
-		if errScan != nil {
-			return nil, errScan
-		}
-		arrColumns = append(arrColumns, txtColumnName)
+	for i:=0;i<jsaRow.Length();i++ {
+		arrColumns = append(arrColumns, jsaRow.GetObject(i).GetString("COLUMN_NAME"))
 	}
 	return arrColumns, nil
 

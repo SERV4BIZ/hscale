@@ -11,7 +11,7 @@ import (
 )
 
 // InsertRow is get data by sql connection
-func InsertRow(dbConn ConnDriver, sqlInsert string, txtTable string, txtKeyname string, jsoData *jsons.JSONObject) error {
+func InsertRow(dbConn *escondb.ESCONTX, sqlInsert string, txtTable string, txtKeyname string, jsoData *jsons.JSONObject) error {
 	if jsoData.Length() <= 0 {
 		return errors.New("Data value is empty")
 	}
@@ -53,18 +53,14 @@ func InsertRow(dbConn ConnDriver, sqlInsert string, txtTable string, txtKeyname 
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{columns}", txtColumns)
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{values}", txtValues)
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{keyname}", utility.AddQuote(txtKeyname))
-	dbResult, errExec := dbConn.Exec(sqlQuery)
+	jsoResult, errExec := dbConn.Exec(sqlQuery)
 	if errExec != nil {
 		return errExec
 	}
 
-	count, errResult := dbResult.RowsAffected()
-	if errResult != nil {
-		return errResult
-	}
-
+	count := jsoResult.GetInt("int_affected")
 	if count == 0 {
-		return errors.New("Can not update data row")
+		return errors.New("Can not insert data row")
 	}
 
 	return nil

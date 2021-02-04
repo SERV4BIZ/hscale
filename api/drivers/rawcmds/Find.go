@@ -9,7 +9,7 @@ import (
 )
 
 // Find is find data with conditions by sql connection
-func Find(dbConn ConnDriver, sqlFind string, txtTable string, arrColumns []string, txtConditions string, intLimit int) (*jsons.JSONArray, error) {
+func Find(dbConn *escondb.ESCONTX, sqlFind string, txtTable string, arrColumns []string, txtConditions string, intLimit int) (*jsons.JSONArray, error) {
 	if len(arrColumns) <= 0 {
 		return nil, errors.New("Columns is empty")
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 // UpdateRow is get data by sql connection
-func UpdateRow(dbConn ConnDriver, sqlUpdate string, txtTable string, txtKeyname string, jsoData *jsons.JSONObject) error {
+func UpdateRow(dbConn *escondb.ESCONTX, sqlUpdate string, txtTable string, txtKeyname string, jsoData *jsons.JSONObject) error {
 	if jsoData.Length() <= 0 {
 		return errors.New("Data value is empty")
 	}
@@ -43,16 +43,12 @@ func UpdateRow(dbConn ConnDriver, sqlUpdate string, txtTable string, txtKeyname 
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{table}", txtTable)
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{values}", txtColumns)
 	sqlQuery = strings.ReplaceAll(sqlQuery, "{keyname}", utility.AddQuote(txtKeyname))
-	dbResult, errExec := dbConn.Exec(sqlQuery)
+	jsoResult, errExec := dbConn.Exec(sqlQuery)
 	if errExec != nil {
 		return errExec
 	}
 
-	count, errResult := dbResult.RowsAffected()
-	if errResult != nil {
-		return errResult
-	}
-
+	count := jsoResult.GetInt("int_affected")
 	if count == 0 {
 		return errors.New("Can not update data row")
 	}
