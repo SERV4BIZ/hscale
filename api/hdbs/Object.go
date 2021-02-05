@@ -10,7 +10,7 @@ import (
 // DataScan is data struct for job scan data
 type DataScan struct {
 	sync.RWMutex
-	HDB *HDB
+	HDBTX *HDBTX
 
 	Stamp   float64
 	Read    float64

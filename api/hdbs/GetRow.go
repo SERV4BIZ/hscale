@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
+	"github.com/SERV4BIZ/hscale/api/drivers"
 	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
@@ -30,25 +30,33 @@ func (me *HDBTX) GetRow(txtTable string, arrColumns []string, txtKeyname string)
 		dataNodeItem := dbDataItem.DataNode
 
 		dataNodeItem.Reconnect()
+		if dataNodeItem.DBConn == nil {
+			return nil, errors.New("Connection is not open")
+		}
+
 		dataNodeItem.RLock()
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
 		sqlListColumn := dataNodeItem.JSOSQLDriver.GetString("listing_column")
 		dataNodeItem.RUnlock()
 
-		if dataNodeItem.DBConn == nil {
-			return nil, errors.New("Connection is not open")
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return nil, errors.New("Database transaction not found")
 		}
 
 		var errColumns error
 		if len(columns) == 0 {
-			columns, errColumns = rawcmds.ListColumns(dataNodeItem.DBConn, sqlListColumn, txtTable)
+			columns, errColumns = drivers.ListColumns(dbTx, sqlListColumn, txtTable)
 		}
 
 		if errColumns != nil {
 			return nil, errors.New("Columns is empty")
 		}
 
-		jsoResult, errRaw := rawcmds.GetRow(dataNodeItem.DBConn, sqlSelect, txtTable, columns, txtKeyname)
+		jsoResult, errRaw := drivers.GetRow(dbTx, sqlSelect, txtTable, columns, txtKeyname)
 		return jsoResult, errRaw
 	}
 
@@ -70,25 +78,33 @@ func (me *HDBTX) GetRow(txtTable string, arrColumns []string, txtKeyname string)
 		me.HDB.MutexMapDataNode.RUnlock()
 
 		dataNodeItem.Reconnect()
+		if dataNodeItem.DBConn == nil {
+			return nil, errors.New("Connection is not open")
+		}
+		
 		dataNodeItem.RLock()
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
 		sqlListColumn := dataNodeItem.JSOSQLDriver.GetString("listing_column")
 		dataNodeItem.RUnlock()
 
-		if dataNodeItem.DBConn == nil {
-			return nil, errors.New("Connection is not open")
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return nil, errors.New("Database transaction not found")
 		}
 
 		var errColumns error
 		if len(columns) == 0 {
-			columns, errColumns = rawcmds.ListColumns(dataNodeItem.DBConn, sqlListColumn, txtTable)
+			columns, errColumns = drivers.ListColumns(dbTx, sqlListColumn, txtTable)
 		}
 
 		if errColumns != nil {
 			return nil, errors.New(fmt.Sprint("Columns is empty [ ", errColumns, " ]"))
 		}
 
-		jsoResult, errRaw := rawcmds.GetRow(dataNodeItem.DBConn, sqlSelect, txtTable, columns, txtKeyname)
+		jsoResult, errRaw := drivers.GetRow(dbTx, sqlSelect, txtTable, columns, txtKeyname)
 		if errRaw == nil {
 			if jsoResult != nil {
 				dbTable.Lock()

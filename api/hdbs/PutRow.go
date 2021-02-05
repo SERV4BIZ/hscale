@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
+	"github.com/SERV4BIZ/hscale/api/drivers"
 	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
@@ -30,15 +30,23 @@ func (me *HDBTX) PutRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 		dataNodeItem := dbDataItem.DataNode
 
 		dataNodeItem.Reconnect()
-		dataNodeItem.RLock()
-		sqlUpdate := dataNodeItem.JSOSQLDriver.GetString("update")
-		dataNodeItem.RUnlock()
-
 		if dataNodeItem.DBConn == nil {
 			return errors.New("Connection is not open")
 		}
 
-		return rawcmds.UpdateRow(dataNodeItem.DBConn, sqlUpdate, txtTable, txtKeyname, jsoData)
+		dataNodeItem.RLock()
+		sqlUpdate := dataNodeItem.JSOSQLDriver.GetString("update")
+		dataNodeItem.RUnlock()
+
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return errors.New("Database transaction not found")
+		}
+
+		return drivers.UpdateRow(dbTx, sqlUpdate, txtTable, txtKeyname, jsoData)
 	}
 
 	// If not found data pointer
@@ -62,16 +70,24 @@ func (me *HDBTX) PutRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 		me.HDB.MutexMapDataNode.RUnlock()
 
 		dataNodeItem.Reconnect()
+		if dataNodeItem.DBConn == nil {
+			return errors.New("Connection is not open")
+		}
+
 		dataNodeItem.RLock()
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
 		sqlUpdate := dataNodeItem.JSOSQLDriver.GetString("update")
 		dataNodeItem.RUnlock()
 
-		if dataNodeItem.DBConn == nil {
-			return errors.New("Connection is not open")
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return errors.New("Database transaction not found")
 		}
 
-		jsoResult, errRaw := rawcmds.GetRow(dataNodeItem.DBConn, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
+		jsoResult, errRaw := drivers.GetRow(dbTx, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
 		if errRaw == nil {
 			if jsoResult != nil {
 				dbTable.Lock()
@@ -81,7 +97,7 @@ func (me *HDBTX) PutRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 				dbDataItem.DataTable = dbTable
 				dbTable.MapDataItem[txtKeyname] = dbDataItem
 				dbTable.Unlock()
-				return rawcmds.UpdateRow(dataNodeItem.DBConn, sqlUpdate, txtTable, txtKeyname, jsoData)
+				return drivers.UpdateRow(dbTx, sqlUpdate, txtTable, txtKeyname, jsoData)
 			}
 		}
 	}
@@ -92,13 +108,21 @@ func (me *HDBTX) PutRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 	me.HDB.MutexMapDataNode.RUnlock()
 
 	dataNodeItem.Reconnect()
+	if dataNodeItem.DBConn == nil {
+		return errors.New("Connection is not open")
+	}
+	
 	dataNodeItem.RLock()
 	sqlInsert := dataNodeItem.JSOSQLDriver.GetString("insert")
 	dataNodeItem.RUnlock()
 
-	if dataNodeItem.DBConn == nil {
-		return errors.New("Connection is not open")
+	dataNodeItem.MutexMapDBTx.Lock()
+	dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+	dataNodeItem.MutexMapDBTx.Unlock()
+
+	if !dbTxOk {
+		return errors.New("Database transaction not found")
 	}
 
-	return rawcmds.InsertRow(dataNodeItem.DBConn, sqlInsert, txtTable, txtKeyname, jsoData)
+	return drivers.InsertRow(dbTx, sqlInsert, txtTable, txtKeyname, jsoData)
 }

@@ -1,10 +1,11 @@
-package trans
+package hdbs
 
 import (
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
+// Commit is save transaction all node to database
 func (me *HDBTX) Commit() error {
 	jsaNodeKey := jsons.JSONArrayFactory()
 	me.HDB.MutexMapDataNode.RLock()

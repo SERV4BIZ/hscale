@@ -1,10 +1,11 @@
-package trans
+package hdbs
 
 import (
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
+// Rollback is storage data and cancel transaction all node
 func (me *HDBTX) Rollback() error {
 	jsaNodeKey := jsons.JSONArrayFactory()
 	me.HDB.MutexMapDataNode.RLock()

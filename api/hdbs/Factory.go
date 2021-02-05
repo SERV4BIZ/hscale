@@ -1,10 +1,10 @@
 package hdbs
 
 import (
-	"database/sql"
 	"fmt"
 	"strings"
 
+	"github.com/SERV4BIZ/escondb"
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/gfp/uuid"
 )
@@ -69,7 +69,7 @@ func Factory(jsoConfigHost *jsons.JSONObject) (*HDB, error) {
 		nNodeItem.JSODataBase = jsoNodeInfo.GetObject("jso_database")
 		nNodeItem.JSOSQLDriver = jsoNodeInfo.GetObject("jso_sqldriver")
 		nNodeItem.DBConn = nil
-		nNodeItem.MapDBTx = make(map[string]*sql.Tx)
+		nNodeItem.MapDBTx = make(map[string]*escondb.ESCONTX)
 
 		errConn := nNodeItem.Connect()
 		if errConn != nil {

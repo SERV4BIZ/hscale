@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
+	"github.com/SERV4BIZ/hscale/api/drivers"
 	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
@@ -30,6 +30,10 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 		dataNodeItem := dbDataItem.DataNode
 
 		dataNodeItem.Reconnect()
+		if dataNodeItem.DBConn == nil {
+			return errors.New("Connection is not open")
+		}
+		
 		dataNodeItem.RLock()
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
 		dataNodeItem.RUnlock()
@@ -42,11 +46,7 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 			return errors.New("Database transaction not found")
 		}
 
-		if dataNodeItem.DBConn == nil {
-			return errors.New("Connection is not open")
-		}
-
-		_, errRaw := rawcmds.GetRow(dbTx, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
+		_, errRaw := drivers.GetRow(dbTx, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
 		if errRaw == nil {
 			return errors.New("Already in database")
 		}
@@ -72,11 +72,11 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 		dataNodeItem := me.HDB.MapDataNode[nodeName]
 		me.HDB.MutexMapDataNode.RUnlock()
 
+		dataNodeItem.Reconnect()
 		if dataNodeItem.DBConn == nil {
 			return errors.New("Connection is not open")
 		}
 
-		dataNodeItem.Reconnect()
 		dataNodeItem.RLock()
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
 		dataNodeItem.RUnlock()
@@ -89,7 +89,7 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 			return errors.New("Database transaction not found")
 		}
 
-		jsoResult, errRaw := rawcmds.GetRow(dbTx, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
+		jsoResult, errRaw := drivers.GetRow(dbTx, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
 		if errRaw == nil {
 			if jsoResult != nil {
 				dbTable.Lock()
@@ -109,11 +109,11 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 	dataNodeItem := me.HDB.MapDataNode[nodeKeys[utility.RandomIntn(len(nodeKeys))]]
 	me.HDB.MutexMapDataNode.RUnlock()
 
+	dataNodeItem.Reconnect()
 	if dataNodeItem.DBConn == nil {
 		return errors.New("Connection is not open")
 	}
 
-	dataNodeItem.Reconnect()
 	dataNodeItem.RLock()
 	sqlInsert := dataNodeItem.JSOSQLDriver.GetString("insert")
 	dataNodeItem.RUnlock()
@@ -126,5 +126,5 @@ func (me *HDBTX) AddRow(txtTable string, txtKeyname string, jsoData *jsons.JSONO
 		return errors.New("Database transaction not found")
 	}
 
-	return rawcmds.InsertRow(dbTx, sqlInsert, txtTable, txtKeyname, jsoData)
+	return drivers.InsertRow(dbTx, sqlInsert, txtTable, txtKeyname, jsoData)
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
+	"github.com/SERV4BIZ/hscale/api/drivers"
 	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
@@ -39,19 +39,27 @@ func (me *HDBTX) Find(txtTable string, arrColumns []string, txtConditions string
 		me.HDB.MutexMapDataNode.RUnlock()
 
 		dataNodeItem.Reconnect()
+		if dataNodeItem.DBConn == nil {
+			return nil, errors.New("Connection is not open")
+		}
+		
 		dataNodeItem.RLock()
 		sqlFind := dataNodeItem.JSOSQLDriver.GetString("find")
 		sqlFindLimit := dataNodeItem.JSOSQLDriver.GetString("find_limit")
 		sqlListColumn := dataNodeItem.JSOSQLDriver.GetString("listing_column")
 		dataNodeItem.RUnlock()
 
-		if dataNodeItem.DBConn == nil {
-			return nil, errors.New("Connection is not open")
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk   := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return nil,errors.New("Database transaction not found")
 		}
 
 		var errColumns error
 		if len(columns) == 0 {
-			columns, errColumns = rawcmds.ListColumns(dataNodeItem.DBConn, sqlListColumn, txtTable)
+			columns, errColumns = drivers.ListColumns(dbTx, sqlListColumn, txtTable)
 		}
 
 		if errColumns != nil {
@@ -63,7 +71,7 @@ func (me *HDBTX) Find(txtTable string, arrColumns []string, txtConditions string
 			sqlQuery = sqlFindLimit
 		}
 
-		jsaRaw, errRaw := rawcmds.Find(dataNodeItem.DBConn, sqlQuery, txtTable, columns, txtConditions, intLimit)
+		jsaRaw, errRaw := drivers.Find(dbTx, sqlQuery, txtTable, columns, txtConditions, intLimit)
 		if errRaw != nil {
 			return nil, errors.New(fmt.Sprint("Can not find data from raw command [ ", errRaw, " ]"))
 		}

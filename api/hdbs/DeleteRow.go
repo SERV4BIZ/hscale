@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
+	"github.com/SERV4BIZ/hscale/api/drivers"
 	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
@@ -27,15 +27,23 @@ func (me *HDBTX) DeleteRow(txtTable string, txtKeyname string) error {
 		dataNodeItem := dbDataItem.DataNode
 
 		dataNodeItem.Reconnect()
-		dataNodeItem.RLock()
-		sqlDelete := dataNodeItem.JSOSQLDriver.GetString("delete")
-		dataNodeItem.RUnlock()
-
 		if dataNodeItem.DBConn == nil {
 			return errors.New("Connection is not open")
 		}
 
-		errRaw := rawcmds.DeleteRow(dataNodeItem.DBConn, sqlDelete, txtTable, txtKeyname)
+		dataNodeItem.RLock()
+		sqlDelete := dataNodeItem.JSOSQLDriver.GetString("delete")
+		dataNodeItem.RUnlock()
+
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return errors.New("Database transaction not found")
+		}
+
+		errRaw := drivers.DeleteRow(dbTx, sqlDelete, txtTable, txtKeyname)
 		if errRaw != nil {
 			return errRaw
 		}
@@ -64,15 +72,23 @@ func (me *HDBTX) DeleteRow(txtTable string, txtKeyname string) error {
 		me.HDB.MutexMapDataNode.RUnlock()
 
 		dataNodeItem.Reconnect()
+		if dataNodeItem.DBConn == nil {
+			return errors.New("Connection is not open")
+		}
+		
 		dataNodeItem.RLock()
 		sqlDelete := dataNodeItem.JSOSQLDriver.GetString("delete")
 		dataNodeItem.RUnlock()
 
-		if dataNodeItem.DBConn == nil {
-			return errors.New("Connection is not open")
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return errors.New("Database transaction not found")
 		}
 
-		errRaw := rawcmds.DeleteRow(dataNodeItem.DBConn, sqlDelete, txtTable, txtKeyname)
+		errRaw := drivers.DeleteRow(dbTx, sqlDelete, txtTable, txtKeyname)
 		if errRaw == nil {
 			return nil
 		}

@@ -1,10 +1,6 @@
 package hdbs
 
 import (
-	"errors"
-	"fmt"
-	"strings"
-
 	"github.com/SERV4BIZ/escondb"
 )
 
@@ -18,14 +14,14 @@ func (me *DataNode) Connect() error {
 	password := me.JSODataBase.GetString("txt_password")
 	me.RUnlock()
 
-	me.DBConn,errConn := escondb.Connect(driverName, host, port, username, password, me.HDB.DBName)
+	var errConn error = nil
+	me.DBConn, errConn = escondb.Connect(driverName, host, port, username, password, me.HDB.DBName)
 	if errConn != nil {
-		if conn != nil {
-			conn.Close()
+		if me.DBConn != nil {
+			me.DBConn.Close()
 		}
 		me.DBConn = nil
 		return errConn
 	}
-	me.DBConn = conn
 	return nil
 }

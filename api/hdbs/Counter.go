@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/drivers/rawcmds"
+	"github.com/SERV4BIZ/hscale/api/drivers"
 	"github.com/SERV4BIZ/hscale/api/utility"
 )
 
@@ -19,7 +19,7 @@ func (me *HDBTX) Counter(txtKeyname string) (int, error) {
 
 	me.HDB.MutexMapDataTable.RLock()
 	dbTable, tableOk := me.HDB.MapDataTable[txtTable]
-	me.MutexMapDataTable.RUnlock()
+	me.HDB.MutexMapDataTable.RUnlock()
 
 	if !tableOk {
 		return -1, errors.New("Table not found")
@@ -33,21 +33,29 @@ func (me *HDBTX) Counter(txtKeyname string) (int, error) {
 		dataNodeItem := dbDataItem.DataNode
 
 		dataNodeItem.Reconnect()
+		if dataNodeItem.DBConn == nil {
+			return -1, errors.New("Connection is not open")
+		}
+		
 		dataNodeItem.RLock()
 		sqlIncrease := dataNodeItem.JSOSQLDriver.GetString("increase_value")
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
 		dataNodeItem.RUnlock()
 
-		if dataNodeItem.DBConn == nil {
-			return -1, errors.New("Connection is not open")
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return -1, errors.New("Database transaction not found")
 		}
 
-		errInc := rawcmds.IncreaseValue(dataNodeItem.DBConn, sqlIncrease, txtTable, txtKeyname, txtColumn, 1)
+		errInc := drivers.IncreaseValue(dbTx, sqlIncrease, txtTable, txtKeyname, txtColumn, 1)
 		if errInc != nil {
 			return -1, errInc
 		}
 
-		jsoResult, errRaw := rawcmds.GetRow(dataNodeItem.DBConn, sqlSelect, txtTable, []string{"int_value"}, txtKeyname)
+		jsoResult, errRaw := drivers.GetRow(dbTx, sqlSelect, txtTable, []string{"int_value"}, txtKeyname)
 		if errRaw != nil {
 			return -1, errRaw
 		}
@@ -64,7 +72,7 @@ func (me *HDBTX) Counter(txtKeyname string) (int, error) {
 		jsaNodeKey.PutString(key)
 		nodeKeys = append(nodeKeys, key)
 	}
-	me.MutexMapDataNode.RUnlock()
+	me.HDB.MutexMapDataNode.RUnlock()
 
 	for jsaNodeKey.Length() > 0 {
 		index := utility.RandomIntn(jsaNodeKey.Length())
@@ -76,24 +84,32 @@ func (me *HDBTX) Counter(txtKeyname string) (int, error) {
 		me.HDB.MutexMapDataNode.RUnlock()
 
 		dataNodeItem.Reconnect()
+		if dataNodeItem.DBConn == nil {
+			return -1, errors.New("Connection is not open")
+		}
+
 		dataNodeItem.RLock()
 		sqlIncrease := dataNodeItem.JSOSQLDriver.GetString("increase_value")
 		sqlSelect := dataNodeItem.JSOSQLDriver.GetString("select")
 		dataNodeItem.RUnlock()
 
-		if dataNodeItem.DBConn == nil {
-			return -1, errors.New("Connection is not open")
+		dataNodeItem.MutexMapDBTx.Lock()
+		dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+		dataNodeItem.MutexMapDBTx.Unlock()
+
+		if !dbTxOk {
+			return -1, errors.New("Database transaction not found")
 		}
 
-		jsoResult, errRaw := rawcmds.GetRow(dataNodeItem.DBConn, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
+		jsoResult, errRaw := drivers.GetRow(dbTx, sqlSelect, txtTable, []string{"txt_keyname"}, txtKeyname)
 		if errRaw == nil {
 			if jsoResult != nil {
-				errInc := rawcmds.IncreaseValue(dataNodeItem.DBConn, sqlIncrease, txtTable, txtKeyname, txtColumn, 1)
+				errInc := drivers.IncreaseValue(dbTx, sqlIncrease, txtTable, txtKeyname, txtColumn, 1)
 				if errInc != nil {
 					return -1, errInc
 				}
 
-				jsoResult, errRaw := rawcmds.GetRow(dataNodeItem.DBConn, sqlSelect, txtTable, []string{"int_value"}, txtKeyname)
+				jsoResult, errRaw := drivers.GetRow(dbTx, sqlSelect, txtTable, []string{"int_value"}, txtKeyname)
 				if errRaw != nil {
 					return -1, errRaw
 				}
@@ -117,17 +133,25 @@ func (me *HDBTX) Counter(txtKeyname string) (int, error) {
 	me.HDB.MutexMapDataNode.RUnlock()
 
 	dataNodeItem.Reconnect()
-	dataNodeItem.RLock()
-	sqlInsert := dataNodeItem.JSOSQLDriver.GetString("insert")
-	dataNodeItem.RUnlock()
-
 	if dataNodeItem.DBConn == nil {
 		return -1, errors.New("Connection is not open")
 	}
 
+	dataNodeItem.RLock()
+	sqlInsert := dataNodeItem.JSOSQLDriver.GetString("insert")
+	dataNodeItem.RUnlock()
+
+	dataNodeItem.MutexMapDBTx.Lock()
+	dbTx, dbTxOk := dataNodeItem.MapDBTx[me.UUID]
+	dataNodeItem.MutexMapDBTx.Unlock()
+
+	if !dbTxOk {
+		return -1, errors.New("Database transaction not found")
+	}
+
 	jsoData := jsons.JSONObjectFactory()
 	jsoData.PutInt(txtColumn, 1)
-	errInsert := rawcmds.InsertRow(dataNodeItem.DBConn, sqlInsert, txtTable, txtKeyname, jsoData)
+	errInsert := drivers.InsertRow(dbTx, sqlInsert, txtTable, txtKeyname, jsoData)
 	if errInsert != nil {
 		return -1, errInsert
 	}
