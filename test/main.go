@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/SERV4BIZ/gfp/jsons"
-	"github.com/SERV4BIZ/hscale/api/hdbs"
+	"github.com/SERV4BIZ/hscale/api/hscales"
 )
 
 func GetAppDir() string {
@@ -21,7 +21,7 @@ func GetAppDir() string {
 func main() {
 	pathFile := fmt.Sprint(GetAppDir(), "/config.json")
 	jsoConfig, _ := jsons.JSONObjectFromFile(pathFile)
-	hdbs.New(jsoConfig)
+	hscales.New(jsoConfig)
 
 	//time.Sleep(time.Hour)
 }
