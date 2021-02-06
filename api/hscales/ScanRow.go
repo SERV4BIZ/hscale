@@ -34,21 +34,29 @@ func ScanRowWorker(hdbTx *HDB, scanItem *DataScan, txtTable string, arrColumns [
 		dataNodeItem := hdbTx.MapDataNode[nodeName]
 		hdbTx.MutexMapDataNode.RUnlock()
 
-		Reconnect(dataNodeItem)
-		dataNodeItem.RLock()
-		sqlListing := dataNodeItem.JSOSQLDriver.GetString("listing")
-		sqlListColumn := dataNodeItem.JSOSQLDriver.GetString("listing_column")
-		dataNodeItem.RUnlock()
-
+		dataNodeItem.Reconnect()
 		if dataNodeItem.DBConn == nil {
 			scanItem.IsError = true
 			scanItem.ErrorMsg = "Connection is not open"
 			break
 		}
 
+		dbTx, errTx := dataNodeItem.DBConn.Begin()
+		if errTx != nil {
+			scanItem.IsError = true
+			scanItem.ErrorMsg = "Can not create transaction"
+			break
+		}
+		defer dbTx.Rollback()
+
+		dataNodeItem.RLock()
+		sqlListing := dataNodeItem.JSOSQLDriver.GetString("listing")
+		sqlListColumn := dataNodeItem.JSOSQLDriver.GetString("listing_column")
+		dataNodeItem.RUnlock()
+
 		var errColumns error
 		if len(columns) == 0 {
-			columns, errColumns = drivers.ListColumns(dataNodeItem.DBConn, sqlListColumn, txtTable)
+			columns, errColumns = drivers.ListColumns(dbTx, sqlListColumn, txtTable)
 		}
 
 		if errColumns != nil {
@@ -62,7 +70,7 @@ func ScanRowWorker(hdbTx *HDB, scanItem *DataScan, txtTable string, arrColumns [
 		for {
 			<-time.After(time.Millisecond)
 
-			jsaListing, errListing := drivers.Listing(dataNodeItem.DBConn, sqlListing, txtTable, columns, intOffset, intLimit)
+			jsaListing, errListing := drivers.Listing(dbTx, sqlListing, txtTable, columns, intOffset, intLimit)
 			if errListing != nil {
 				scanItem.IsError = true
 				scanItem.ErrorMsg = fmt.Sprint("Can not listing from table [ ", errListing, " ]")
