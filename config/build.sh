@@ -1,10 +1,15 @@
 #!/bin/sh
 
-NAMELINUX="config.arm"
+NAMEARM="config.arm"
 NAMELINUX="config.linux"
 NAMEFREEBSD="config.freebsd"
 NAMEWINDOWS="config.windows"
 NAMEDARWIN="config.darwin"
+
+rm -f $NAMEARM
+export GOOS=linux
+export GOARCH=arm64
+go build -o $NAMEARM
 
 rm -f $NAMELINUX
 export GOOS=linux

@@ -3,6 +3,7 @@ package dbprepare
 import (
 	"fmt"
 
+	"github.com/SERV4BIZ/escondb"
 	"github.com/SERV4BIZ/gfp/handler"
 	"github.com/SERV4BIZ/hscale/config/locals"
 )
@@ -21,13 +22,13 @@ func Run() {
 		jsoDatabase := jsoNodeinfo.GetObject("jso_database")
 		driverName := jsoDatabase.GetString("txt_driver")
 
-		conn, errConn := Connect(driverName, jsoDatabase.GetString("txt_host"), jsoDatabase.GetInt("int_port"), jsoDatabase.GetString("txt_username"), jsoDatabase.GetString("txt_password"), jsoDatabase.GetString("txt_dbname"))
-		if handler.Error(errConn) {
+		dbConn, errConn := escondb.Connect(driverName, jsoDatabase.GetString("txt_host"), jsoDatabase.GetInt("int_port"), jsoDatabase.GetString("txt_username"), jsoDatabase.GetString("txt_password"), jsoDatabase.GetString("txt_dbname"))
+		if errConn != nil {
 			panic(fmt.Sprint(jsaDataNode.GetString(i), " ", driverName, " ", jsoDatabase.GetString("txt_host"), " ", jsoDatabase.GetString("txt_dbname"), " [] ", errConn, " ]"))
 		}
-		defer conn.Close()
+		defer dbConn.Close()
 
 		// Create Database
-		CreateDatabase(jsoNodeinfo, jsoDatabase, driverName, conn)
+		CreateDatabase(jsoNodeinfo, jsoDatabase, driverName, dbConn)
 	}
 }

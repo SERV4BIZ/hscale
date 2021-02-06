@@ -1,18 +1,19 @@
 package dbcmd
 
 import (
-	"database/sql"
 	"strings"
 
-	"github.com/SERV4BIZ/gfp/handler"
+	"github.com/SERV4BIZ/escondb"
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/hscale/config/locals"
 )
 
 // AddColumnList is add column to table on current database in host
-func AddColumnList(driverName string, dbConn *sql.DB, tableName string, columnName string, columnValue *jsons.JSONObject) bool {
+func AddColumnList(driverName string, dbConn *escondb.ESCONDB, tableName string, columnName string, columnValue *jsons.JSONObject) bool {
 	sql, errLoad := locals.LoadSQLDriver(driverName, "add_column_object")
-	handler.Panic(errLoad)
+	if errLoad != nil {
+		panic(errLoad)
+	}
 
 	if !columnValue.CheckKey("txt_table") {
 		defTable := strings.TrimPrefix(columnName, "lst_")
@@ -35,7 +36,9 @@ func AddColumnList(driverName string, dbConn *sql.DB, tableName string, columnNa
 	sql = strings.ReplaceAll(sql, "{name}", columnName)
 	sql = strings.ReplaceAll(sql, "{value}", columnValue.ToString())
 	_, errExec := dbConn.Exec(sql)
-	handler.Panic(errExec)
+	if errExec != nil {
+		panic(errExec)
+	}
 
 	return true
 }

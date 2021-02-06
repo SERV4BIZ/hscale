@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 
-	"github.com/SERV4BIZ/gfp/handler"
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/hscale/config/locals"
 )
@@ -15,7 +14,7 @@ func Info(jsoCmd *jsons.JSONObject) *jsons.JSONObject {
 
 	dbname := jsoCmd.GetString("txt_name")
 	dbinfo, err := locals.LoadDatabaseInfo(dbname)
-	if handler.Error(err) {
+	if err != nil {
 		jsoResult.PutString("txt_msg", fmt.Sprint("Can not load database info [ ", err, " ]"))
 		return jsoResult
 	}

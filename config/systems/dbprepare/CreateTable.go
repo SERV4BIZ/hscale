@@ -3,6 +3,7 @@ package dbprepare
 import (
 	"strings"
 
+	"github.com/SERV4BIZ/escondb"
 	"github.com/SERV4BIZ/gfp/handler"
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/hscale/config/locals"
@@ -11,8 +12,10 @@ import (
 
 // CreateTable is check table and shard number on database if not found create it.
 func CreateTable(jsoNodeinfo *jsons.JSONObject, jsoDatabase *jsons.JSONObject, driverName string, dbName string) {
-	connTable, errConnTable := Connect(driverName, jsoDatabase.GetString("txt_host"), jsoDatabase.GetInt("int_port"), jsoDatabase.GetString("txt_username"), jsoDatabase.GetString("txt_password"), dbName)
-	handler.Panic(errConnTable)
+	connTable, errConnTable := escondb.Connect(driverName, jsoDatabase.GetString("txt_host"), jsoDatabase.GetInt("int_port"), jsoDatabase.GetString("txt_username"), jsoDatabase.GetString("txt_password"), dbName)
+	if errConnTable != nil {
+		panic(errConnTable)
+	}
 	defer connTable.Close()
 
 	listTables := dbcmd.ListingTable(driverName, connTable)

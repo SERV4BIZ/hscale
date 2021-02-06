@@ -1,27 +1,25 @@
 package dbcmd
 
 import (
-	"database/sql"
-
-	"github.com/SERV4BIZ/gfp/handler"
+	"github.com/SERV4BIZ/escondb"
 	"github.com/SERV4BIZ/hscale/config/locals"
 )
 
 // ListingDatabase is list all database in host
-func ListingDatabase(driverName string, dbConn *sql.DB) []string {
+func ListingDatabase(driverName string, dbConn *escondb.ESCONDB) []string {
 	sql, errLoad := locals.LoadSQLDriver(driverName, "listing_database")
-	handler.Panic(errLoad)
+	if errLoad != nil {
+		panic(errLoad)
+	}
 
 	var list []string
 	rows, errQuery := dbConn.Query(sql)
-	handler.Panic(errQuery)
-	defer rows.Close()
-
-	var dbName string
-	for rows.Next() {
-		errScan := rows.Scan(&dbName)
-		handler.Panic(errScan)
-		list = append(list, dbName)
+	if errQuery != nil {
+		panic(errQuery)
+	}
+	for i := 0; i < rows.Length(); i++ {
+		keys := rows.GetObject(i).GetKeys()
+		list = append(list, rows.GetObject(i).GetString(keys[0]))
 	}
 
 	return list

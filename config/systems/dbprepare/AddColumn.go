@@ -1,15 +1,15 @@
 package dbprepare
 
 import (
-	"database/sql"
 	"strings"
 
+	"github.com/SERV4BIZ/escondb"
 	"github.com/SERV4BIZ/gfp/jsons"
 	"github.com/SERV4BIZ/hscale/config/systems/dbcmd"
 )
 
 // AddColumn is check column all in table if not found add it.
-func AddColumn(dbConn *sql.DB, driverName string, dbName string, dbTable string, jsoColumn *jsons.JSONObject) {
+func AddColumn(dbConn *escondb.ESCONDB, driverName string, dbName string, dbTable string, jsoColumn *jsons.JSONObject) {
 	listCols := dbcmd.ListingColumn(driverName, dbConn, dbTable)
 	columns := jsoColumn.GetKeys()
 	for _, pcolName := range columns {

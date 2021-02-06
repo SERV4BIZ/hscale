@@ -1,21 +1,24 @@
 package dbcmd
 
 import (
-	"database/sql"
 	"strings"
 
-	"github.com/SERV4BIZ/gfp/handler"
+	"github.com/SERV4BIZ/escondb"
 	"github.com/SERV4BIZ/hscale/config/locals"
 )
 
 // CreateTable is create table on current database in host
-func CreateTable(driverName string, dbConn *sql.DB, tableName string) bool {
+func CreateTable(driverName string, dbConn *escondb.ESCONDB, tableName string) bool {
 	sql, errLoad := locals.LoadSQLDriver(driverName, "create_table")
-	handler.Panic(errLoad)
+	if errLoad != nil {
+		panic(errLoad)
+	}
 
 	sql = strings.ReplaceAll(sql, "{name}", tableName)
 	_, errExec := dbConn.Exec(sql)
-	handler.Panic(errExec)
+	if errExec != nil {
+		panic(errExec)
+	}
 
 	return true
 }
