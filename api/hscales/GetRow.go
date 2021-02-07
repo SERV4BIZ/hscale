@@ -99,7 +99,6 @@ func (me *HDBTX) GetRow(txtTable string, arrColumns []string, txtKeyname string)
 		if len(columns) == 0 {
 			columns, errColumns = drivers.ListColumns(dbTx, sqlListColumn, txtTable)
 		}
-		fmt.Println(columns)
 
 		if errColumns != nil {
 			return nil, errors.New(fmt.Sprint("Columns is empty [ ", errColumns, " ]"))
