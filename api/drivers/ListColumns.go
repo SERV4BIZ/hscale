@@ -17,7 +17,8 @@ func ListColumns(dbConn *escondb.ESCONTX, sqlListColumn string, txtTable string)
 
 	arrColumns := make([]string, 0)
 	for i := 0; i < jsaRow.Length(); i++ {
-		arrColumns = append(arrColumns, jsaRow.GetObject(i).GetString("COLUMN_NAME"))
+		keys := jsaRow.GetObject(i).GetKeys()
+		arrColumns = append(arrColumns, jsaRow.GetObject(i).GetString(keys[0]))
 	}
 	return arrColumns, nil
 
